@@ -3,17 +3,19 @@
 import sys
 import os
 import subprocess as sub
+from time import sleep
 
-xx = []
+urls = []
 fp = open(sys.argv[1])
 while 1:
-    l = fp.readline()
-    if l not in ["\n", ""]:
-    	xx.append(l)
-    if not l:
+    line = fp.readline()
+    if line not in ["\n", ""]:
+    	urls.append(l)
+    if not line:
         break
-for x in xx:
-	c = "youtube-dl "+x
-	print c
-	os.system(c)
+for url  in urls:
+	cmd = "youtube-dl "+x
+	print cmd
+	os.system(cmd)*
+	sleep(300)
 
