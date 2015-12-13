@@ -64,6 +64,7 @@ def server_loop():
     server.listen(5)
     while (True):
         client_socket, addr = server.accept()
+        print client_socket, addr
         client_thread = threading.Thread(target=client_handler, args=(client_socket,))
         client_thread.start()
 
@@ -95,7 +96,7 @@ def client_handler(client_socket):
             fp = open(upload_destination, "wb")
             fp.write(file_buffer)
             fp.close()
-            client_socket.send("Succesfully savec file to %s\r\n" % upload_destination)
+            client_socket.send("Succesfully saved file to %s\r\n" % upload_destination)
         except:
             client_socket.send("Failed to save file to %s\r\n" % upload_destination)
 
@@ -128,8 +129,12 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:",
             ["help", "listen", "execute", "target", "port", "command", "upload"])
+        print opts, args
     except getopt.GetoptError as e:
         print str(e)
+        how_to_use()
+
+    if len(args):
         how_to_use()
 
     for x, y in opts:
