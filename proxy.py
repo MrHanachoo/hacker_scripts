@@ -41,7 +41,7 @@ def server_loop(local_host, local_port, remote_host, remote_port, receive_first)
     while True:
         client_socket, addr = server.accept()
         print client_socket
-        print "[=>] Received incoming connection from %s:%d" % (addr[0], addr[1])
+        print bcolors.OKGREEN+"[=>] Received incoming connection from %s:%d" % (addr[0], addr[1]) + bcolors.ENDC
 
         # start a thread to talk to the remote host
         proxy_thread = threading.Thread(target=proxy_handler, args=(client_socket, remote_host, remote_port, receive_first))
@@ -64,7 +64,7 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
 
         # if we have data to send to our local client, send it
         if len(remote_buffer):
-            print bcolors.OKBLUE+ "[<==] Sending %d bytes to localhost." % len(remote_buffer)
+            print bcolors.OKBLUE+ "[<==] Sending %d bytes to localhost." % len(remote_buffer)+ bcolors.ENDC
             client_socket.send(remote_buffer)
 
     # now let's loop and read from local, send to remote, send to local
@@ -74,7 +74,7 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
         local_buffer = receive_from(client_socket)
 
         if len(local_buffer):
-            print bcolors.OKBLUE+ "[==>] Received %d bytes from localhost." % len(local_buffer)
+            print bcolors.OKGREEN+ "[==>] Received %d bytes from localhost." % len(local_buffer)+ bcolors.ENDC
             hexdump(local_buffer)
 
             # send it to our request handler
@@ -97,7 +97,7 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
             # send the response to the local socket
             client_socket.send(remote_buffer)
 
-            print bcolors.OKBLUE+ "[<==] Sent to localhost."+ bcolors.ENDC
+            print bcolors.OKGREEN+ "[<==] Sent to localhost."+ bcolors.ENDC
 
         # if no more data to either side, close the connections
         if not len(local_buffer) or not len(remote_buffer):
@@ -124,7 +124,7 @@ def hexdump(src, length=16):
 def receive_from(connection):
     buffer = ""
     # the timeout is setted to 2 sec
-    connection.settimeout(2)
+    connection.settimeout(10)
     try:
         while True:
             data = connection.recv(4096)
@@ -146,11 +146,9 @@ def response_handler(buffer):
 
 def main():
     # command line control
-    if len(sys.args[1:]) !=5:
-        print bcolors.BOLD+ "Usage: "+ bcolors.ENDC+ \
-              "python proxy.py [localhost] [localport] [remotehost] [remoteport] [receive_first]"
-        print bcolors.BOLD+ "Example: "+ bcolors.ENDC+ \
-            "python proxy.py localhost 8000 192.168.1.100 8000 True"
+    if len(sys.argv[1:]) !=5:
+        print bcolors.FAIL+ "Usage: python proxy.py [localhost] [localport] [remotehost] [remoteport] [receive_first]"+ bcolors.ENDC
+        print bcolors.OKGREEN+ "Example: python proxy.py localhost 8000 192.168.1.100 8000 True"+ bcolors.ENDC
         sys.exit(0)
 
     local_host = sys.argv[1]
@@ -169,14 +167,3 @@ def main():
     server_loop(local_host, local_port, remot_host, remote_port, receive_first)
 
 main()
-
-
-"""
-print bcolors.HEADER+ "[x] Failed to listen on %s:%d" + bcolors.ENDC
-print bcolors.OKBLUE+ "[x] Failed to listen on %s:%d" + bcolors.ENDC
-print bcolors.OKGREEN+ "[x] Failed to listen on %s:%d"+ bcolors.ENDC
-print bcolors.WARNING+ "[x] Failed to listen on %s:%d"+ bcolors.ENDC
-print bcolors.FAIL+ "[x] Failed to listen on %s:%d"+ bcolors.ENDC
-print bcolors.BOLD+ "[x] Failed to listen on %s:%d"+ bcolors.ENDC
-print bcolors.UNDERLINE+ "[x] Failed to listen on %s:%d"+ bcolors.ENDC
-"""
