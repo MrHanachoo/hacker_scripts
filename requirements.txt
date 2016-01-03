@@ -1,0 +1,8 @@
+argparse==1.2.1
+ecdsa==0.13
+github3.py==0.9.4
+paramiko==1.16.0
+pycrypto==2.6.1
+requests==2.8.1
+uritemplate.py==0.3.0
+wsgiref==0.1.2

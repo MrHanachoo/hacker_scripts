@@ -3,16 +3,28 @@ __author__ = 'med'
 import threading
 import paramiko
 import subprocess as sub
+import os
+import sys
 
-def ssh_command(ip, user, passwd, command):
+if len(sys.argv[1:]) !=5:
+    print "USAGE: python ssh_Rcmd.py [server_ip] [server_port] [username] [passwd] [command]"
+    sys.exit(0)
+
+ip = sys.argv[1]
+port = int(sys.argv[2])
+user = sys.argv[3]
+passwd = sys.argv[4]
+command = sys.argv[5]
+
+def ssh_command(ip, port, user, passwd, command):
     client = paramiko.SSHClient()
-    client.load_host_keys("/home/med/.ssh/known_hosts")
+    #   client.load_host_keys(os.path.expanduser(os.path.join("~", ".ssh", "known_hosts")))
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(ip, username=user, password=passwd)
+    client.connect(ip, port=port, username=user, password=passwd)
     ssh_session = client.get_transport().open_session()
     if ssh_session.active:
         ssh_session.exec_command(command)
-        print ssh_session.recv(1024)
+        print ssh_session.recv(1024) # read welcoming message
         while True:
             command = ssh_session.recv(1024) # get the command from the server
             try:
@@ -24,4 +36,4 @@ def ssh_command(ip, user, passwd, command):
     return
 
 
-
+ssh_command(ip, port, user, passwd, command)

@@ -5,8 +5,18 @@ import paramiko
 import threading
 import sys
 
+if len(sys.argv) !=5:
+    print len(sys.argv)
+    # print len(sys.argv[1:])
+    print "USAGE: python ssh_server.py [server_ip] [server_port] [username] [passwd]"
+    sys.exit(0)
 
-host_key = paramiko.RSAKey(filename='/home/med/.ssh/id_rsa')
+host_key = paramiko.RSAKey(filename='rsa.key')
+
+server = sys.argv[1]
+ssh_port = int(sys.argv[2])
+USERNAME = sys.argv[3]
+PASSWD = sys.argv[4]
 
 
 class Server(paramiko.ServerInterface):
@@ -20,12 +30,10 @@ class Server(paramiko.ServerInterface):
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
     def check_auth_password(self, username, password):
-        if (username == 'med') and (password == "passwd"):
+        if (username == USERNAME) and (password == PASSWD):
             return paramiko.AUTH_SUCCESSFUL
         return paramiko.AUTH_FAILED
 
-server = sys.argv[1]
-ssh_port = int(sys.argv[2])
 
 try:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,7 +56,7 @@ try:
     except paramiko.SSHException, e:
         print '[!] SSH negotiation failed.'
     chan = mySession.accept(20)
-    print '[*] Authenticated !'
+    print '[+] Authenticated !'
     print chan.recv(1024)
     chan.send('Welcome to med_ssh')
     while True:
@@ -65,7 +73,7 @@ try:
         except KeyboardInterrupt:
             mySession.close()
 except Exception, e:
-    print "[!] Caught exeception: "+ str(e)
+    print "[-] Caught exeception: "+ str(e)
     try:
         mySession.close()
     except:

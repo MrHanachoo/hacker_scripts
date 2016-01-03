@@ -19,10 +19,10 @@ def how_to_use():
     print "\t### myNetcat Tool ###"
     print "\t#####################"
     print "\tUsage: netcat.py -t target_host -p port"
-    print "\t-l --listen 					- listen on [host]:[port] for incoming connection"
+    print "\t-l --listen 				- listen on [host]:[port] for incoming connection"
     print "\t-e --execute=file_to_run 	- execute the given file once receiving a connection"
     print "\t-c --command 				- initialize a command shell"
-    print "\t-u --upload=destination      - once receiving connection, upload file and write to [destination]"
+    print "\t-u --upload=destination    - once receiving connection, upload file and write to [destination]"
     print "\tExamples:"
     print "\tnetcat.py -t 192.168.1.1 -p 5000 -l -c"
     print "\tnetcat.py -t 192.168.1.1 -p 5000 -l -u=$HOME"
@@ -41,13 +41,13 @@ def client_sender(buffer):
             recv_len = 1
             response = ""
             while recv_len:
-                data = client.recv(8192)
+                data = client.recv(4096)
                 recv_len = len(data)
                 response+=data
-                if recv_len < 8192:
+                if recv_len < 4096:
                     break
             print response,
-
+            # wait for more input
             buffer = raw_input("")
             buffer+= "\n"
             client.send(buffer)
@@ -71,6 +71,7 @@ def server_loop():
 
 def run_command(command):
     command = command.rstrip()
+    print "command: ", command
     try:
         output = sub.check_output(command, stderr=sub.STDOUT, shell=True)
     except:
@@ -82,16 +83,22 @@ def client_handler(client_socket):
     global upload
     global execute
     global command
+    # check for upload
     if len(upload_destination):
+        # read in all of the bytes and write to our destination
         file_buffer = ""
 
+        # keep reading data until none is available
         while True:
+            print "len(upload_destination): ", len(upload_destination)
+
             data = client_socket.recv(1024)
             if not data:
                 break
             else:
                 file_buffer+= data
 
+        # now we take that data and we write it to the the file named "upload_destination"
         try:
             fp = open(upload_destination, "wb")
             fp.write(file_buffer)
@@ -129,7 +136,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:",
             ["help", "listen", "execute", "target", "port", "command", "upload"])
-        print opts, args
+        print "opts: ", opts, "args: ", args
     except getopt.GetoptError as e:
         print str(e)
         how_to_use()
@@ -148,6 +155,7 @@ def main():
             command = True
         elif x in ("-u", "--upload"):
             upload_destination = y
+            print "upload_destination=", upload_destination
         elif x in ("-t", "--target"):
             target = y
         elif x in ("-p", "--port"):
